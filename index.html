@@ -3,84 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <title>Catálogo Nemesis</title>
+
 <style>
-body { font-family: Arial; background:#111; color:#eee; padding:20px }
-input, select, button { padding:6px; margin:4px }
-#pasteArea { border:2px dashed #555; padding:20px; margin:10px 0 }
-img { max-width:150px; display:block; margin:5px 0 }
-.item { border:1px solid #333; padding:10px; margin:10px 0 }
-</style>
-</head>
-<body>
-
-<h2>Catálogo Nemesis</h2>
-
-<div id="login">
-<input id="user" placeholder="Login">
-<input id="pass" type="password" placeholder="Senha">
-<button onclick="login()">Entrar</button>
-</div>
-
-<div id="app" style="display:none">
-<input id="nome" placeholder="Nome do item">
-<input id="valor" placeholder="Valor">
-<select id="categoria">
-<option>Hat</option><option>Weapon</option><option>Ring</option>
-</select>
-
-<div id="pasteArea" contenteditable="true">Cole a imagem aqui (Ctrl+V)</div>
-<img id="preview">
-
-<button onclick="salvar()">Salvar item</button>
-<hr>
-<div id="lista"></div>
-</div>
-
-<script>
-let imgData = "";
-
-function login(){
- if(user.value==="Nemesis" && pass.value==="yaraebellntomabanho"){
-  login.style.display="none";
-  app.style.display="block";
-  carregar();
- }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0e0e0e;
+  color: #eee;
 }
 
-pasteArea.addEventListener("paste", e=>{
- const items=e.clipboardData.items;
- for(let i of items){
-  if(i.type.includes("image")){
-   const file=i.getAsFile();
-   const r=new FileReader();
-   r.onload=ev=>{
-    imgData=ev.target.result;
-    preview.src=imgData;
-   };
-   r.readAsDataURL(file);
+header {
+  background: #1b2a3a;
+  padding: 12px 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+}
+
+.admin {
+  width: 320px;
+  padding: 15px;
+  background: #121212;
+  border-right: 1px solid #333;
+}
+
+.admin input, .admin textarea, .admin select, .admin button {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+}
+
+.admin button {
+  cursor: pointer;
+}
+
+#pasteArea {
+  border: 2px dashed #555;
+  padding: 15px;
+  text-align: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+#pasteArea:hover {
+  background: #1a1a1a;
+}
+
+#preview {
+  max-width: 100%;
+  display: none;
+  margin-bottom: 8px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filters input, .filters select {
+  padding: 6px;
+  flex: 1;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.item {
+  background: #161616;
+  border: 1px solid #333;
+  padding: 10px;
+}
+
+.item img {
+  max-width: 100%;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<header>Catálogo Nemesis</header>
+
+<div id="login" style="padding:20px">
+  <input id="user" placeholder="Login"><br><br>
+  <input id="pass" type="password" placeholder="Senha"><br><br>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div id="app" class="hidden">
+
+<div class="container">
+
+<!-- ADMIN -->
+<div class="admin">
+  <h3>Admin</h3>
+
+  <select id="categoria">
+    <option>Hat</option>
+    <option>Weapon</option>
+    <option>Ring</option>
+    <option>Accessory</option>
+    <option>Other</option>
+  </select>
+
+  <input id="nome" placeholder="Nome do item">
+  <input id="valorMin" placeholder="Valor mínimo">
+  <input id="valorMax" placeholder="Valor máximo">
+  <textarea id="desc" placeholder="Descrição"></textarea>
+
+  <div id="pasteArea" contenteditable="true">
+    Cole a imagem aqui (Ctrl + V)
+  </div>
+
+  <img id="preview">
+
+  <button onclick="salvar()">Salvar</button>
+  <button onclick="apagarTudo()">APAGAR TUDO</button>
+</div>
+
+<!-- LISTA -->
+<div class="main">
+
+<div class="filters">
+  <select id="filtroCat" onchange="render()">
+    <option value="">Todas categorias</option>
+    <option>Hat</option>
+    <option>Weapon</option>
+    <option>Ring</option>
+    <option>Accessory</option>
+    <option>Other</option>
+  </select>
+
+  <select id="ordem" onchange="render()">
+    <option value="">Sem ordenação</option>
+    <option value="asc">Valor ↑</option>
+    <option value="desc">Valor ↓</option>
+  </select>
+
+  <input id="busca" placeholder="Buscar por nome ou valor" oninput="render()">
+</div>
+
+<div id="lista" class="grid"></div>
+
+</div>
+</div>
+</div>
+
+<footer style="padding:10px;text-align:center;color:#777">
+  Assassino
+</footer>
+
+<script>
+let imagem = "";
+
+function login(){
+  if(user.value === "Nemesis" && pass.value === "yaraebellntomabanho"){
+    login.style.display = "none";
+    app.classList.remove("hidden");
+    render();
   }
- }
+}
+
+pasteArea.addEventListener("paste", e => {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.includes("image")) {
+      const file = item.getAsFile();
+      const r = new FileReader();
+      r.onload = ev => {
+        imagem = ev.target.result;
+        preview.src = imagem;
+        preview.style.display = "block";
+      };
+      r.readAsDataURL(file);
+    }
+  }
 });
 
 function salvar(){
- const dados=JSON.parse(localStorage.getItem("itens")||"[]");
- dados.push({n:nome.value,v:valor.value,c:categoria.value,i:imgData});
- localStorage.setItem("itens",JSON.stringify(dados));
- carregar();
+  const dados = JSON.parse(localStorage.getItem("itens") || "[]");
+  dados.push({
+    nome: nome.value,
+    min: valorMin.value,
+    max: valorMax.value,
+    desc: desc.value,
+    cat: categoria.value,
+    img: imagem
+  });
+  localStorage.setItem("itens", JSON.stringify(dados));
+  render();
 }
 
-function carregar(){
- lista.innerHTML="";
- const dados=JSON.parse(localStorage.getItem("itens")||"[]");
- dados.forEach(d=>{
-  lista.innerHTML+=`<div class="item">
-  <b>${d.n}</b><br>Valor: ${d.v}<br>Categoria: ${d.c}<br>
-  <img src="${d.i}">
-  </div>`;
- });
+function apagarTudo(){
+  if(confirm("Apagar tudo?")){
+    localStorage.removeItem("itens");
+    render();
+  }
+}
+
+function render(){
+  let dados = JSON.parse(localStorage.getItem("itens") || "[]");
+
+  if(filtroCat.value)
+    dados = dados.filter(d => d.cat === filtroCat.value);
+
+  if(busca.value)
+    dados = dados.filter(d =>
+      d.nome.toLowerCase().includes(busca.value.toLowerCase()) ||
+      d.min.includes(busca.value) ||
+      d.max.includes(busca.value)
+    );
+
+  if(ordem.value === "asc")
+    dados.sort((a,b)=>Number(a.min)-Number(b.min));
+  if(ordem.value === "desc")
+    dados.sort((a,b)=>Number(b.min)-Number(a.min));
+
+  lista.innerHTML = "";
+  dados.forEach(d => {
+    lista.innerHTML += `
+      <div class="item">
+        <img src="${d.img}">
+        <b>${d.nome}</b><br>
+        ${d.cat}<br>
+        ${d.min} - ${d.max}<br>
+        <small>${d.desc}</small>
+      </div>
+    `;
+  });
 }
 </script>
 
-<footer>Assassino</footer>
 </body>
 </html>
