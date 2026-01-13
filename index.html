@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Catálogo Nemesis</title>
+<style>
+body { font-family: Arial; background:#111; color:#eee; padding:20px }
+input, select, button { padding:6px; margin:4px }
+#pasteArea { border:2px dashed #555; padding:20px; margin:10px 0 }
+img { max-width:150px; display:block; margin:5px 0 }
+.item { border:1px solid #333; padding:10px; margin:10px 0 }
+</style>
+</head>
+<body>
+
+<h2>Catálogo Nemesis</h2>
+
+<div id="login">
+<input id="user" placeholder="Login">
+<input id="pass" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+</div>
+
+<div id="app" style="display:none">
+<input id="nome" placeholder="Nome do item">
+<input id="valor" placeholder="Valor">
+<select id="categoria">
+<option>Hat</option><option>Weapon</option><option>Ring</option>
+</select>
+
+<div id="pasteArea" contenteditable="true">Cole a imagem aqui (Ctrl+V)</div>
+<img id="preview">
+
+<button onclick="salvar()">Salvar item</button>
+<hr>
+<div id="lista"></div>
+</div>
+
+<script>
+let imgData = "";
+
+function login(){
+ if(user.value==="Nemesis" && pass.value==="yaraebellntomabanho"){
+  login.style.display="none";
+  app.style.display="block";
+  carregar();
+ }
+}
+
+pasteArea.addEventListener("paste", e=>{
+ const items=e.clipboardData.items;
+ for(let i of items){
+  if(i.type.includes("image")){
+   const file=i.getAsFile();
+   const r=new FileReader();
+   r.onload=ev=>{
+    imgData=ev.target.result;
+    preview.src=imgData;
+   };
+   r.readAsDataURL(file);
+  }
+ }
+});
+
+function salvar(){
+ const dados=JSON.parse(localStorage.getItem("itens")||"[]");
+ dados.push({n:nome.value,v:valor.value,c:categoria.value,i:imgData});
+ localStorage.setItem("itens",JSON.stringify(dados));
+ carregar();
+}
+
+function carregar(){
+ lista.innerHTML="";
+ const dados=JSON.parse(localStorage.getItem("itens")||"[]");
+ dados.forEach(d=>{
+  lista.innerHTML+=`<div class="item">
+  <b>${d.n}</b><br>Valor: ${d.v}<br>Categoria: ${d.c}<br>
+  <img src="${d.i}">
+  </div>`;
+ });
+}
+</script>
+
+<footer>Assassino</footer>
+</body>
+</html>
