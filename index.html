@@ -9,54 +9,53 @@
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1920&q=80")
+  background:url("https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80")
   no-repeat center center fixed;
   background-size:cover;
   color:#eee;
 }
 
-/* OVERLAY */
 .overlay{
   min-height:100vh;
-  background:rgba(0,0,0,0.78);
+  background:rgba(0,0,0,.75);
 }
 
 /* MARCA FUNDO */
-.brand-bg{
+.brand{
   position:fixed;
   inset:0;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   font-size:120px;
   font-weight:900;
-  color:rgba(255,255,255,0.03);
-  letter-spacing:15px;
+  letter-spacing:18px;
+  color:rgba(255,255,255,0.04);
   pointer-events:none;
-  z-index:0;
 }
 
-/* HEADER */
 header{
-  position:relative;
-  z-index:2;
-  background:#111;
+  background:#0f1720;
   padding:15px 30px;
   font-size:22px;
-  letter-spacing:3px;
-}
-
-/* CENTER */
-.center{
+  letter-spacing:4px;
   position:relative;
   z-index:2;
+}
+
+/* TELAS */
+.screen{
   min-height:80vh;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
+  flex-direction:column;
   gap:15px;
+  position:relative;
+  z-index:2;
 }
+
+.hidden{display:none}
 
 button{
   padding:12px 25px;
@@ -70,24 +69,20 @@ input, textarea, select{
   padding:8px;
 }
 
-.hidden{display:none}
-
 /* SISTEMA */
 .container{
   display:flex;
-  position:relative;
-  z-index:2;
+  gap:20px;
 }
 
 .admin{
   width:300px;
-  background:#0e0e0e;
+  background:#111;
   padding:15px;
 }
 
 .main{
   flex:1;
-  padding:20px;
 }
 
 .grid{
@@ -98,16 +93,14 @@ input, textarea, select{
 
 .item{
   background:#181818;
-  border:1px solid #333;
   padding:10px;
+  border:1px solid #333;
 }
 
 .item img{
   width:100%;
-  margin-bottom:5px;
 }
 
-/* PASTE */
 #paste{
   border:2px dashed #444;
   padding:10px;
@@ -118,31 +111,30 @@ input, textarea, select{
 </head>
 
 <body>
-<div class="brand-bg">NEMESIS</div>
+<div class="brand">NEMESIS</div>
 
 <div class="overlay">
-
 <header>NEMESIS • CATÁLOGO</header>
 
 <!-- HOME -->
-<div id="home" class="center">
-  <button id="btnMembro">Entrar como Membro</button>
-  <button id="btnAdmin">Entrar como Admin</button>
+<div id="home" class="screen">
+  <button onclick="abrirMembro()">Entrar como Membro</button>
+  <button onclick="abrirAdmin()">Entrar como Admin</button>
 </div>
 
-<!-- LOGIN ADMIN -->
-<div id="loginAdmin" class="center hidden">
-  <input id="login" placeholder="Login">
-  <input id="senha" type="password" placeholder="Senha">
-  <button id="btnLogin">Entrar</button>
+<!-- LOGIN -->
+<div id="login" class="screen hidden">
+  <input id="user" placeholder="Login">
+  <input id="pass" type="password" placeholder="Senha">
+  <button onclick="logar()">Entrar</button>
+  <button onclick="voltar()">Voltar</button>
 </div>
 
 <!-- SISTEMA -->
-<div id="sistema" class="hidden">
+<div id="sistema" class="screen hidden">
   <div class="container">
 
-    <!-- ADMIN -->
-    <div id="painelAdmin" class="admin hidden">
+    <div id="admin" class="admin hidden">
       <h3>Admin</h3>
       <select id="categoria">
         <option>Hat</option>
@@ -154,15 +146,12 @@ input, textarea, select{
       <input id="vmin" placeholder="Valor mínimo">
       <input id="vmax" placeholder="Valor máximo">
       <textarea id="desc" placeholder="Descrição"></textarea>
-
-      <div id="paste">Cole imagem (CTRL + V)</div>
+      <div id="paste">Cole imagem (CTRL+V)</div>
       <img id="preview" style="display:none;width:100%;margin-top:5px">
-
-      <button id="btnSalvar">Salvar</button>
-      <button id="btnApagar">Apagar tudo</button>
+      <button onclick="salvar()">Salvar</button>
+      <button onclick="apagar()">Apagar tudo</button>
     </div>
 
-    <!-- LISTA -->
     <div class="main">
       <div id="lista" class="grid"></div>
     </div>
@@ -173,73 +162,69 @@ input, textarea, select{
 </div>
 
 <script>
-let imagemBase64 = "";
+let img64 = "";
 
-/* EVENTOS */
-document.addEventListener("DOMContentLoaded",()=>{
-
-  btnMembro.onclick = entrarMembro;
-  btnAdmin.onclick = mostrarLogin;
-  btnLogin.onclick = loginAdmin;
-  btnSalvar.onclick = salvar;
-  btnApagar.onclick = apagarTudo;
-
-  paste.addEventListener("paste",e=>{
-    for(const item of e.clipboardData.items){
-      if(item.type.includes("image")){
-        const file = item.getAsFile();
-        const reader = new FileReader();
-        reader.onload = ev=>{
-          imagemBase64 = ev.target.result;
-          preview.src = imagemBase64;
-          preview.style.display="block";
-        }
-        reader.readAsDataURL(file);
-      }
-    }
-  });
-
-});
-
-/* FUNÇÕES */
-function entrarMembro(){
+/* CONTROLE DE TELAS */
+function esconderTudo(){
   home.classList.add("hidden");
+  login.classList.add("hidden");
+  sistema.classList.add("hidden");
+}
+
+/* BOTÕES */
+function abrirMembro(){
+  esconderTudo();
   sistema.classList.remove("hidden");
+  admin.classList.add("hidden");
   carregar();
 }
 
-function mostrarLogin(){
-  home.classList.add("hidden");
-  loginAdmin.classList.remove("hidden");
+function abrirAdmin(){
+  esconderTudo();
+  login.classList.remove("hidden");
 }
 
-function loginAdmin(){
-  if(login.value==="Nemesis" && senha.value==="yaraebellntomabanho"){
-    loginAdminDiv = document.getElementById("loginAdmin");
-    loginAdminDiv.classList.add("hidden");
+function voltar(){
+  esconderTudo();
+  home.classList.remove("hidden");
+}
+
+function logar(){
+  if(user.value==="Nemesis" && pass.value==="yaraebellntomabanho"){
+    esconderTudo();
     sistema.classList.remove("hidden");
-    painelAdmin.classList.remove("hidden");
+    admin.classList.remove("hidden");
     carregar();
   }else{
-    alert("Login inválido");
+    alert("Login incorreto");
   }
 }
 
+/* IMAGEM */
+paste.addEventListener("paste",e=>{
+  for(const i of e.clipboardData.items){
+    if(i.type.includes("image")){
+      const f=i.getAsFile();
+      const r=new FileReader();
+      r.onload=ev=>{
+        img64=ev.target.result;
+        preview.src=img64;
+        preview.style.display="block";
+      }
+      r.readAsDataURL(f);
+    }
+  }
+});
+
+/* DADOS */
 function salvar(){
-  const dados = JSON.parse(localStorage.getItem("nemesis")||"[]");
-  dados.push({
-    c:categoria.value,
-    n:nome.value,
-    a:vmin.value,
-    b:vmax.value,
-    d:desc.value,
-    i:imagemBase64
-  });
-  localStorage.setItem("nemesis",JSON.stringify(dados));
+  const d=JSON.parse(localStorage.getItem("nemesis")||"[]");
+  d.push({c:categoria.value,n:nome.value,a:vmin.value,b:vmax.value,d:desc.value,i:img64});
+  localStorage.setItem("nemesis",JSON.stringify(d));
   carregar();
 }
 
-function apagarTudo(){
+function apagar(){
   if(confirm("Apagar tudo?")){
     localStorage.removeItem("nemesis");
     carregar();
@@ -247,9 +232,9 @@ function apagarTudo(){
 }
 
 function carregar(){
-  const dados = JSON.parse(localStorage.getItem("nemesis")||"[]");
+  const d=JSON.parse(localStorage.getItem("nemesis")||"[]");
   lista.innerHTML="";
-  dados.forEach(x=>{
+  d.forEach(x=>{
     lista.innerHTML+=`
       <div class="item">
         <img src="${x.i}">
