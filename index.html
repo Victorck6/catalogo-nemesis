@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Catálogo Nemesis</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+body{font-family:Arial;background:#111;color:#eee;margin:0}
+header{padding:15px;background:#1f2937;font-size:20px;display:flex;justify-content:space-between}
+.container{display:flex;height:calc(100vh - 110px)}
+form{width:320px;padding:15px;background:#181818;overflow:auto}
+input,select,button,textarea{width:100%;margin-bottom:10px;padding:8px}
+.gallery{flex:1;display:grid;grid-template-columns:repeat(auto-fill,200px);gap:15px;padding:15px;overflow:auto}
+.card{background:#222;padding:10px;border-radius:8px}
+img{width:100%;height:150px;object-fit:contain;background:#000}
+.actions{display:flex;gap:5px;margin-top:5px}
+.actions button{flex:1;font-size:12px}
+.filters{padding:10px;background:#151515;display:flex;gap:10px;align-items:center}
+.filters button{background:#7f1d1d;color:#fff;border:none;padding:8px;cursor:pointer}
+.hidden{display:none}
+footer{padding:8px;text-align:center;font-size:12px;background:#0f172a}
+</style>
+</head>
+<body>
+<header>
+<span>Catálogo Nemesis</span>
+<button onclick="logout()" id="logoutBtn" class="hidden">Sair (Admin)</button>
+</header>
+
+<div class="filters">
+<select id="filtroCategoria"><option value="">Todas categorias</option></select>
+<select id="ordem">
+<option value="">Sem ordenação</option>
+<option value="asc">Mais barato</option>
+<option value="desc">Mais caro</option>
+</select>
+<input id="busca" placeholder="Buscar por nome ou valor">
+</div>
+
+<div class="container">
+<form id="form" class="hidden">
+<h3>Admin</h3>
+<input type="hidden" id="editId">
+<select id="categoria"></select>
+<input id="nome" placeholder="Nome do item">
+<input id="min" placeholder="Valor mínimo">
+<input id="max" placeholder="Valor máximo">
+<textarea id="desc" placeholder="Descrição"></textarea>
+<input type="file" id="img">
+<button type="submit">Salvar</button>
+<button type="button" onclick="apagarTudo()">APAGAR TUDO</button>
+</form>
+
+<div class="gallery" id="gallery"></div>
+</div>
+
+<footer>Site por <b>Assassino</b></footer>
+
+<script>
+/* ======= CONFIGURE SEU FIREBASE AQUI ======= */
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_DOMINIO.firebaseapp.com",
+  databaseURL: "https://SEU_DOMINIO.firebaseio.com",
+  projectId: "SEU_DOMINIO",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ======= LOGIN SIMPLES (ADMIN) ======= */
+const ADMIN_LOGIN="Nemesis";
+const ADMIN_PASS="yaraebellntomabanho";
+
+function login(){
+ const l=prompt("Login:");
+ const s=prompt("Senha:");
+ if(l===ADMIN_LOGIN && s===ADMIN_PASS){
+  sessionStorage.setItem("admin","1");
+  init();
+ }else alert("Acesso negado");
+}
+function logout(){sessionStorage.removeItem("admin");location.reload();}
+
+function init(){
+ const isAdmin=sessionStorage.getItem("admin")==="1";
+ document.getElementById("form").classList.toggle("hidden",!isAdmin);
+ document.getElementById("logoutBtn").classList.toggle("hidden",!isAdmin);
+ carregar();
+}
+
+const categorias=["Hat","Mask","Weapon","Pants","Shoes","Accessory","Vest","Consumable","Key","Currency","Recipe","WeaponSkin","Furniture","Pack","Rod","Scroll","Ring","Authority","Other"];
+categorias.forEach(c=>{
+ categoria.innerHTML+=`<option>${c}</option>`;
+ filtroCategoria.innerHTML+=`<option>${c}</option>`;
+});
+
+form.onsubmit=e=>{
+ e.preventDefault();
+ const file=img.files[0];
+ const r=new FileReader();
+ r.onload=()=>{
+  const item={categoria:categoria.value,nome:nome.value,min:+min.value||0,max:+max.value||0,desc:desc.value,img:r.result};
+  db.ref("itens").push(item);
+  form.reset();
+ };
+ r.readAsDataURL(file);
+};
+
+function apagarTudo(){
+ if(confirm("Apagar tudo?")){
+  db.ref("itens").remove();
+ }
+}
+
+function carregar(){
+ gallery.innerHTML="";
+ db.ref("itens").on("value",snap=>{
+  gallery.innerHTML="";
+  let itens=Object.values(snap.val()||{});
+  if(filtroCategoria.value) itens=itens.filter(i=>i.categoria===filtroCategoria.value);
+  const b=busca.value.toLowerCase();
+  if(b) itens=itens.filter(i=>i.nome.toLowerCase().includes(b)||String(i.min).includes(b));
+  if(ordem.value==="asc") itens.sort((a,b)=>a.min-b.min);
+  if(ordem.value==="desc") itens.sort((a,b)=>b.min-a.min);
+  itens.forEach(i=>gallery.innerHTML+=`
+   <div class="card">
+    <img src="${i.img}">
+    <b>${i.nome}</b><br>${i.categoria}<br>${i.min} - ${i.max}
+   </div>`);
+ });
+}
+
+filtroCategoria.onchange=carregar;
+ordem.onchange=carregar;
+busca.oninput=carregar;
+
+if(confirm("Entrar como administrador?")) login();
+else init();
+</script>
+</body>
+</html>
