@@ -8,17 +8,25 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #0e0e0e;
+  background: #0b0b0b;
   color: #eee;
 }
 
-<header style="display:flex;justify-content:space-between;align-items:center">
-  <span>Catálogo Nemesis</span>
-  <div>
-    <button onclick="entrarMembro()">Entrar como membro</button>
-    <button onclick="mostrarLogin()">Entrar como admin</button>
-  </div>
-</header>
+header {
+  background: #1b2a3a;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header button {
+  margin-left: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.hidden { display: none; }
 
 .container {
   display: flex;
@@ -26,27 +34,26 @@ body {
 
 .admin {
   width: 320px;
-  padding: 15px;
   background: #121212;
+  padding: 15px;
   border-right: 1px solid #333;
 }
 
-.admin input, .admin textarea, .admin select, .admin button {
+.admin input,
+.admin textarea,
+.admin select,
+.admin button {
   width: 100%;
   margin-bottom: 8px;
   padding: 6px;
-}
-
-.admin button {
-  cursor: pointer;
 }
 
 #pasteArea {
   border: 2px dashed #555;
   padding: 15px;
   text-align: center;
-  margin-bottom: 8px;
   cursor: pointer;
+  margin-bottom: 8px;
 }
 
 #pasteArea:hover {
@@ -70,7 +77,8 @@ body {
   margin-bottom: 15px;
 }
 
-.filters input, .filters select {
+.filters input,
+.filters select {
   padding: 6px;
   flex: 1;
 }
@@ -93,111 +101,183 @@ body {
   margin-bottom: 6px;
 }
 
-.hidden {
-  display: none;
+footer {
+  text-align: center;
+  padding: 10px;
+  color: #777;
 }
 </style>
 </head>
 
 <body>
 
-<header>Catálogo Nemesis</header>
+<header>
+  <span>Catálogo Nemesis</span>
+  <div>
+    <button onclick="entrarMembro()">Entrar como membro</button>
+    <button onclick="mostrarLogin()">Entrar como admin</button>
+  </div>
+</header>
 
-<div id="login" style="padding:20px;display:none">
+<!-- LOGIN ADMIN -->
+<div id="login" class="hidden" style="padding:20px">
   <input id="user" placeholder="Login"><br><br>
   <input id="pass" type="password" placeholder="Senha"><br><br>
-  <button onclick="login()">Entrar</button>
+  <button onclick="loginAdmin()">Entrar</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
+  <div class="container">
 
-<div class="container">
+    <!-- PAINEL ADMIN -->
+    <div class="admin hidden" id="adminPanel">
+      <h3>Admin</h3>
 
-<!-- ADMIN -->
-<div class="admin" id="adminPanel">
-  <h3>Admin</h3>
+      <select id="categoria">
+        <option>Hat</option>
+        <option>Weapon</option>
+        <option>Ring</option>
+        <option>Accessory</option>
+        <option>Other</option>
+      </select>
 
-  <select id="categoria">
-    <option>Hat</option>
-    <option>Weapon</option>
-    <option>Ring</option>
-    <option>Accessory</option>
-    <option>Other</option>
-  </select>
+      <input id="nome" placeholder="Nome do item">
+      <input id="valorMin" placeholder="Valor mínimo">
+      <input id="valorMax" placeholder="Valor máximo">
+      <textarea id="desc" placeholder="Descrição"></textarea>
 
-  <input id="nome" placeholder="Nome do item">
-  <input id="valorMin" placeholder="Valor mínimo">
-  <input id="valorMax" placeholder="Valor máximo">
-  <textarea id="desc" placeholder="Descrição"></textarea>
+      <div id="pasteArea" contenteditable="true">
+        Cole a imagem aqui (Ctrl + V)
+      </div>
 
-  <div id="pasteArea" contenteditable="true">
-    Cole a imagem aqui (Ctrl + V)
+      <img id="preview">
+
+      <button onclick="salvar()">Salvar</button>
+      <button onclick="apagarTudo()">APAGAR TUDO</button>
+    </div>
+
+    <!-- LISTA -->
+    <div class="main">
+      <div class="filters">
+        <select id="filtroCat" onchange="render()">
+          <option value="">Todas categorias</option>
+          <option>Hat</option>
+          <option>Weapon</option>
+          <option>Ring</option>
+          <option>Accessory</option>
+          <option>Other</option>
+        </select>
+
+        <select id="ordem" onchange="render()">
+          <option value="">Sem ordenação</option>
+          <option value="asc">Valor ↑</option>
+          <option value="desc">Valor ↓</option>
+        </select>
+
+        <input id="busca" placeholder="Buscar por nome ou valor" oninput="render()">
+      </div>
+
+      <div id="lista" class="grid"></div>
+    </div>
+
   </div>
-
-  <img id="preview">
-
-  <button onclick="salvar()">Salvar</button>
-  <button onclick="apagarTudo()">APAGAR TUDO</button>
 </div>
 
-<!-- LISTA -->
-<div class="main">
-
-<div class="filters">
-  <select id="filtroCat" onchange="render()">
-    <option value="">Todas categorias</option>
-    <option>Hat</option>
-    <option>Weapon</option>
-    <option>Ring</option>
-    <option>Accessory</option>
-    <option>Other</option>
-  </select>
-
-  <select id="ordem" onchange="render()">
-    <option value="">Sem ordenação</option>
-    <option value="asc">Valor ↑</option>
-    <option value="desc">Valor ↓</option>
-  </select>
-
-  <input id="busca" placeholder="Buscar por nome ou valor" oninput="render()">
-</div>
-
-<div id="lista" class="grid"></div>
-
-</div>
-</div>
-</div>
-
-<footer style="padding:10px;text-align:center;color:#777">
-  Assassino
-</footer>
+<footer>Assassino</footer>
 
 <script>
 let imagem = "";
-let modo = "membro"; // membro ou admin
 
 function mostrarLogin(){
-  login.style.display = "block";
+  document.getElementById("login").classList.remove("hidden");
 }
 
 function entrarMembro(){
-  modo = "membro";
-  login.style.display = "none";
-  app.classList.remove("hidden");
-  document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("adminPanel").classList.add("hidden");
   render();
 }
 
-function login(){
+function loginAdmin(){
   if(user.value === "Nemesis" && pass.value === "yaraebellntomabanho"){
-    modo = "admin";
-    login.style.display = "none";
-    app.classList.remove("hidden");
-    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
     render();
   } else {
     alert("Login ou senha incorretos");
   }
+}
+
+pasteArea.addEventListener("paste", e => {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.includes("image")) {
+      const file = item.getAsFile();
+      const r = new FileReader();
+      r.onload = ev => {
+        imagem = ev.target.result;
+        preview.src = imagem;
+        preview.style.display = "block";
+      };
+      r.readAsDataURL(file);
+    }
+  }
+});
+
+function salvar(){
+  const dados = JSON.parse(localStorage.getItem("itens") || "[]");
+  dados.push({
+    nome: nome.value,
+    min: valorMin.value,
+    max: valorMax.value,
+    desc: desc.value,
+    cat: categoria.value,
+    img: imagem
+  });
+  localStorage.setItem("itens", JSON.stringify(dados));
+  render();
+}
+
+function apagarTudo(){
+  if(confirm("Apagar tudo?")){
+    localStorage.removeItem("itens");
+    render();
+  }
+}
+
+function render(){
+  let dados = JSON.parse(localStorage.getItem("itens") || "[]");
+
+  if(filtroCat.value)
+    dados = dados.filter(d => d.cat === filtroCat.value);
+
+  if(busca.value)
+    dados = dados.filter(d =>
+      d.nome.toLowerCase().includes(busca.value.toLowerCase()) ||
+      d.min.includes(busca.value) ||
+      d.max.includes(busca.value)
+    );
+
+  if(ordem.value === "asc")
+    dados.sort((a,b)=>Number(a.min)-Number(b.min));
+  if(ordem.value === "desc")
+    dados.sort((a,b)=>Number(b.min)-Number(a.min));
+
+  lista.innerHTML = "";
+  dados.forEach(d => {
+    lista.innerHTML += `
+      <div class="item">
+        <img src="${d.img}">
+        <b>${d.nome}</b><br>
+        ${d.cat}<br>
+        ${d.min} - ${d.max}<br>
+        <small>${d.desc}</small>
+      </div>
+    `;
+  });
 }
 </script>
 
