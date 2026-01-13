@@ -84,17 +84,17 @@ footer{
 
 <header>Catálogo Nemesis</header>
 
-<!-- TELA INICIAL -->
+<!-- HOME -->
 <div id="home" class="center">
-  <button onclick="entrarMembro()">Entrar como Membro</button>
-  <button onclick="mostrarLogin()">Entrar como Admin</button>
+  <button id="btnMembro">Entrar como Membro</button>
+  <button id="btnAdmin">Entrar como Admin</button>
 </div>
 
-<!-- LOGIN ADMIN -->
+<!-- LOGIN -->
 <div id="login" class="center hidden">
   <input id="user" placeholder="Login">
   <input id="pass" type="password" placeholder="Senha">
-  <button onclick="loginAdmin()">Entrar</button>
+  <button id="btnLogin">Entrar</button>
 </div>
 
 <!-- APP -->
@@ -120,8 +120,8 @@ footer{
       <div id="pasteArea">Cole a imagem (Ctrl + V)</div>
       <img id="preview" style="display:none">
 
-      <button onclick="salvar()">Salvar</button>
-      <button onclick="apagarTudo()">Apagar tudo</button>
+      <button id="btnSalvar">Salvar</button>
+      <button id="btnApagar">Apagar tudo</button>
     </div>
 
     <div class="main">
@@ -134,29 +134,44 @@ footer{
 <footer>Assassino</footer>
 
 <script>
-let imagem="";
+const home = document.getElementById("home");
+const login = document.getElementById("login");
+const app = document.getElementById("app");
+const adminPanel = document.getElementById("adminPanel");
 
-function mostrarLogin(){
-  home.classList.add("hidden");
-  login.classList.remove("hidden");
-}
+const btnMembro = document.getElementById("btnMembro");
+const btnAdmin = document.getElementById("btnAdmin");
+const btnLogin = document.getElementById("btnLogin");
+const btnSalvar = document.getElementById("btnSalvar");
+const btnApagar = document.getElementById("btnApagar");
 
-function entrarMembro(){
+const pasteArea = document.getElementById("pasteArea");
+const preview = document.getElementById("preview");
+const lista = document.getElementById("lista");
+
+let imagem = "";
+
+btnMembro.onclick = () => {
   home.classList.add("hidden");
   app.classList.remove("hidden");
   render();
-}
+};
 
-function loginAdmin(){
+btnAdmin.onclick = () => {
+  home.classList.add("hidden");
+  login.classList.remove("hidden");
+};
+
+btnLogin.onclick = () => {
   if(user.value==="Nemesis" && pass.value==="yaraebellntomabanho"){
     login.classList.add("hidden");
     app.classList.remove("hidden");
     adminPanel.classList.remove("hidden");
     render();
-  }else{
+  } else {
     alert("Login inválido");
   }
-}
+};
 
 pasteArea.addEventListener("paste",e=>{
   for(let item of e.clipboardData.items){
@@ -173,8 +188,8 @@ pasteArea.addEventListener("paste",e=>{
   }
 });
 
-function salvar(){
-  const itens=JSON.parse(localStorage.getItem("itens")||"[]");
+btnSalvar.onclick = () => {
+  const itens = JSON.parse(localStorage.getItem("itens")||"[]");
   itens.push({
     nome:nome.value,
     min:min.value,
@@ -185,17 +200,17 @@ function salvar(){
   });
   localStorage.setItem("itens",JSON.stringify(itens));
   render();
-}
+};
 
-function apagarTudo(){
+btnApagar.onclick = () => {
   if(confirm("Apagar tudo?")){
     localStorage.removeItem("itens");
     render();
   }
-}
+};
 
 function render(){
-  const itens=JSON.parse(localStorage.getItem("itens")||"[]");
+  const itens = JSON.parse(localStorage.getItem("itens")||"[]");
   lista.innerHTML="";
   itens.forEach(i=>{
     lista.innerHTML+=`
