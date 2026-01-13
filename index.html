@@ -2,97 +2,139 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Catálogo Nemesis</title>
+<title>Nemesis • Catálogo</title>
 
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:url("https://images.unsplash.com/photo-1604079628040-94301bb21b91?auto=format&fit=crop&w=1920&q=80") no-repeat center center fixed;
+  background:url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1920&q=80")
+  no-repeat center center fixed;
   background-size:cover;
   color:#eee;
 }
+
+/* OVERLAY */
 .overlay{
-  background:rgba(0,0,0,0.75);
   min-height:100vh;
+  background:rgba(0,0,0,0.78);
 }
+
+/* MARCA FUNDO */
+.brand-bg{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:120px;
+  font-weight:900;
+  color:rgba(255,255,255,0.03);
+  letter-spacing:15px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* HEADER */
 header{
-  background:#1b2a3a;
-  padding:15px 25px;
+  position:relative;
+  z-index:2;
+  background:#111;
+  padding:15px 30px;
   font-size:22px;
-  font-weight:bold;
+  letter-spacing:3px;
 }
+
+/* CENTER */
 .center{
-  height:80vh;
+  position:relative;
+  z-index:2;
+  min-height:80vh;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
   gap:15px;
 }
+
 button{
-  padding:10px 20px;
+  padding:12px 25px;
   font-size:16px;
   cursor:pointer;
+  border:none;
 }
-input{
+
+input, textarea, select{
+  width:240px;
   padding:8px;
-  width:220px;
 }
+
 .hidden{display:none}
 
+/* SISTEMA */
 .container{
   display:flex;
+  position:relative;
+  z-index:2;
 }
+
 .admin{
   width:300px;
-  background:#111;
+  background:#0e0e0e;
   padding:15px;
 }
+
 .main{
   flex:1;
   padding:20px;
 }
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
   gap:15px;
 }
+
 .item{
   background:#181818;
   border:1px solid #333;
   padding:10px;
 }
+
 .item img{
   width:100%;
+  margin-bottom:5px;
 }
+
+/* PASTE */
 #paste{
-  border:2px dashed #555;
+  border:2px dashed #444;
   padding:10px;
   text-align:center;
   margin-top:5px;
-  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
+<div class="brand-bg">NEMESIS</div>
+
 <div class="overlay">
 
-<header>Catálogo Nemesis</header>
+<header>NEMESIS • CATÁLOGO</header>
 
-<!-- TELA INICIAL -->
+<!-- HOME -->
 <div id="home" class="center">
-  <button onclick="entrarMembro()">Entrar como Membro</button>
-  <button onclick="mostrarLogin()">Entrar como Admin</button>
+  <button id="btnMembro">Entrar como Membro</button>
+  <button id="btnAdmin">Entrar como Admin</button>
 </div>
 
 <!-- LOGIN ADMIN -->
 <div id="loginAdmin" class="center hidden">
   <input id="login" placeholder="Login">
   <input id="senha" type="password" placeholder="Senha">
-  <button onclick="loginAdmin()">Entrar</button>
+  <button id="btnLogin">Entrar</button>
 </div>
 
 <!-- SISTEMA -->
@@ -108,14 +150,16 @@ input{
         <option>Ring</option>
         <option>Accessory</option>
       </select>
-      <input id="nome" placeholder="Nome do item">
+      <input id="nome" placeholder="Nome">
       <input id="vmin" placeholder="Valor mínimo">
       <input id="vmax" placeholder="Valor máximo">
       <textarea id="desc" placeholder="Descrição"></textarea>
-      <div id="paste">Cole a imagem aqui (Ctrl + V)</div>
-      <img id="preview" style="display:none;margin-top:5px">
-      <button onclick="salvar()">Salvar</button>
-      <button onclick="apagarTudo()">Apagar tudo</button>
+
+      <div id="paste">Cole imagem (CTRL + V)</div>
+      <img id="preview" style="display:none;width:100%;margin-top:5px">
+
+      <button id="btnSalvar">Salvar</button>
+      <button id="btnApagar">Apagar tudo</button>
     </div>
 
     <!-- LISTA -->
@@ -131,45 +175,55 @@ input{
 <script>
 let imagemBase64 = "";
 
+/* EVENTOS */
+document.addEventListener("DOMContentLoaded",()=>{
+
+  btnMembro.onclick = entrarMembro;
+  btnAdmin.onclick = mostrarLogin;
+  btnLogin.onclick = loginAdmin;
+  btnSalvar.onclick = salvar;
+  btnApagar.onclick = apagarTudo;
+
+  paste.addEventListener("paste",e=>{
+    for(const item of e.clipboardData.items){
+      if(item.type.includes("image")){
+        const file = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = ev=>{
+          imagemBase64 = ev.target.result;
+          preview.src = imagemBase64;
+          preview.style.display="block";
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
+});
+
+/* FUNÇÕES */
 function entrarMembro(){
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("sistema").classList.remove("hidden");
+  home.classList.add("hidden");
+  sistema.classList.remove("hidden");
   carregar();
 }
 
 function mostrarLogin(){
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("loginAdmin").classList.remove("hidden");
+  home.classList.add("hidden");
+  loginAdmin.classList.remove("hidden");
 }
 
 function loginAdmin(){
-  const l = document.getElementById("login").value;
-  const s = document.getElementById("senha").value;
-  if(l==="Nemesis" && s==="yaraebellntomabanho"){
-    document.getElementById("loginAdmin").classList.add("hidden");
-    document.getElementById("sistema").classList.remove("hidden");
-    document.getElementById("painelAdmin").classList.remove("hidden");
+  if(login.value==="Nemesis" && senha.value==="yaraebellntomabanho"){
+    loginAdminDiv = document.getElementById("loginAdmin");
+    loginAdminDiv.classList.add("hidden");
+    sistema.classList.remove("hidden");
+    painelAdmin.classList.remove("hidden");
     carregar();
   }else{
-    alert("Login ou senha incorretos");
+    alert("Login inválido");
   }
 }
-
-document.getElementById("paste").addEventListener("paste",e=>{
-  for(const item of e.clipboardData.items){
-    if(item.type.includes("image")){
-      const file = item.getAsFile();
-      const reader = new FileReader();
-      reader.onload = ev=>{
-        imagemBase64 = ev.target.result;
-        const img = document.getElementById("preview");
-        img.src = imagemBase64;
-        img.style.display="block";
-      }
-      reader.readAsDataURL(file);
-    }
-  }
-});
 
 function salvar(){
   const dados = JSON.parse(localStorage.getItem("nemesis")||"[]");
