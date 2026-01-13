@@ -12,12 +12,13 @@ body {
   color: #eee;
 }
 
-header {
-  background: #1b2a3a;
-  padding: 12px 20px;
-  font-size: 20px;
-  font-weight: bold;
-}
+<header style="display:flex;justify-content:space-between;align-items:center">
+  <span>Catálogo Nemesis</span>
+  <div>
+    <button onclick="entrarMembro()">Entrar como membro</button>
+    <button onclick="mostrarLogin()">Entrar como admin</button>
+  </div>
+</header>
 
 .container {
   display: flex;
@@ -102,7 +103,7 @@ header {
 
 <header>Catálogo Nemesis</header>
 
-<div id="login" style="padding:20px">
+<div id="login" style="padding:20px;display:none">
   <input id="user" placeholder="Login"><br><br>
   <input id="pass" type="password" placeholder="Senha"><br><br>
   <button onclick="login()">Entrar</button>
@@ -113,7 +114,7 @@ header {
 <div class="container">
 
 <!-- ADMIN -->
-<div class="admin">
+<div class="admin" id="adminPanel">
   <h3>Admin</h3>
 
   <select id="categoria">
@@ -173,82 +174,30 @@ header {
 
 <script>
 let imagem = "";
+let modo = "membro"; // membro ou admin
 
-function login(){
-  if(user.value === "Nemesis" && pass.value === "yaraebellntomabanho"){
-    login.style.display = "none";
-    app.classList.remove("hidden");
-    render();
-  }
+function mostrarLogin(){
+  login.style.display = "block";
 }
 
-pasteArea.addEventListener("paste", e => {
-  const items = e.clipboardData.items;
-  for (let item of items) {
-    if (item.type.includes("image")) {
-      const file = item.getAsFile();
-      const r = new FileReader();
-      r.onload = ev => {
-        imagem = ev.target.result;
-        preview.src = imagem;
-        preview.style.display = "block";
-      };
-      r.readAsDataURL(file);
-    }
-  }
-});
-
-function salvar(){
-  const dados = JSON.parse(localStorage.getItem("itens") || "[]");
-  dados.push({
-    nome: nome.value,
-    min: valorMin.value,
-    max: valorMax.value,
-    desc: desc.value,
-    cat: categoria.value,
-    img: imagem
-  });
-  localStorage.setItem("itens", JSON.stringify(dados));
+function entrarMembro(){
+  modo = "membro";
+  login.style.display = "none";
+  app.classList.remove("hidden");
+  document.getElementById("adminPanel").style.display = "none";
   render();
 }
 
-function apagarTudo(){
-  if(confirm("Apagar tudo?")){
-    localStorage.removeItem("itens");
+function login(){
+  if(user.value === "Nemesis" && pass.value === "yaraebellntomabanho"){
+    modo = "admin";
+    login.style.display = "none";
+    app.classList.remove("hidden");
+    document.getElementById("adminPanel").style.display = "block";
     render();
+  } else {
+    alert("Login ou senha incorretos");
   }
-}
-
-function render(){
-  let dados = JSON.parse(localStorage.getItem("itens") || "[]");
-
-  if(filtroCat.value)
-    dados = dados.filter(d => d.cat === filtroCat.value);
-
-  if(busca.value)
-    dados = dados.filter(d =>
-      d.nome.toLowerCase().includes(busca.value.toLowerCase()) ||
-      d.min.includes(busca.value) ||
-      d.max.includes(busca.value)
-    );
-
-  if(ordem.value === "asc")
-    dados.sort((a,b)=>Number(a.min)-Number(b.min));
-  if(ordem.value === "desc")
-    dados.sort((a,b)=>Number(b.min)-Number(a.min));
-
-  lista.innerHTML = "";
-  dados.forEach(d => {
-    lista.innerHTML += `
-      <div class="item">
-        <img src="${d.img}">
-        <b>${d.nome}</b><br>
-        ${d.cat}<br>
-        ${d.min} - ${d.max}<br>
-        <small>${d.desc}</small>
-      </div>
-    `;
-  });
 }
 </script>
 
